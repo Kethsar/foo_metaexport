@@ -30,41 +30,7 @@ public:
 				filePath = pfc::string::g_concatenateRaw(dirloc, strlen(dirloc), "\\meta.txt", strlen("\\meta.txt")); // Need to check if file name is included first. Eventually.
 
 				if (p_track->get_info_async(*p_info)) {
-					pfc::string meta = "";
-
-					if (cfg_getartist == BST_CHECKED) {
-
-						meta += "ARTIST=";
-						meta += get_metadata_for_field(*p_info, "artist");
-					}
-
-					if (cfg_gettitle == BST_CHECKED) {
-						if (strcmp(meta.ptr(), "") != 0) meta += "\n";
-
-						meta += "TITLE=";
-						meta += get_metadata_for_field(*p_info, "title");
-					}
-
-					if (cfg_getalbum == BST_CHECKED) {
-						if (strcmp(meta.ptr(), "") != 0) meta += "\n";
-
-						meta += "ALBUM=";
-						meta += get_metadata_for_field(*p_info, "album");
-					}
-
-					if (cfg_getcomposer == BST_CHECKED) {
-						if (strcmp(meta.ptr(), "") != 0) meta += "\n";
-
-						meta += "COMPOSER=";
-						meta += get_metadata_for_field(*p_info, "composer");
-					}
-
-					if (cfg_getperformer == BST_CHECKED) {
-						if (strcmp(meta.ptr(), "") != 0) meta += "\n";
-
-						meta += "PERFORMER=";
-						meta += get_metadata_for_field(*p_info, "performer");
-					}
+					pfc::string meta = get_all_metadata(*p_info);
 
 					file_ptr *f = new file_ptr();
 					abort_callback_dummy *a = new abort_callback_dummy();
@@ -83,15 +49,17 @@ public:
 		}
 	}
 
-	pfc::string get_metadata_for_field(file_info &p_info, pfc::string field) {
-		pfc::string retval;
+	pfc::string get_all_metadata(file_info &p_info) {
+		pfc::string retval = "";
 
 		for (unsigned i = 0; i < p_info.meta_get_count(); i++) {
 			pfc::string name = p_info.meta_enum_name(i);
+			name = name.toUpper();
 
 			for (unsigned j = 0; j < p_info.meta_enum_value_count(i); j++) {
-				if (pfc::string::g_equalsCaseInsensitive(name, field))
-					retval = p_info.meta_enum_value(i, j);
+				pfc::string val = p_info.meta_enum_value(i, j);
+
+				retval += name + "=" + val + "\n";
 			}
 		}
 
